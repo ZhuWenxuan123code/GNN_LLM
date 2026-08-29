@@ -600,3 +600,60 @@
 - [arXiv HTML 全文](https://arxiv.org/html/2606.09484)：三种模型、两种 prompt、三种 serialization、400+400 图对、表 1-3、观察、解释与 limitations。
 - [arXiv PDF](https://arxiv.org/pdf/2606.09484)：公开 PDF 下载入口；本地文件完成 header、size、SHA256、EOF、page count、encryption 和渲染检查。
 - [GraphDO ACL 2025](https://aclanthology.org/2025.acl-long.321/)、[CoEvoT arXiv](https://arxiv.org/abs/2607.14114)、[GraphInsight ACL 2025](https://aclanthology.org/2025.acl-long.591/)、[GDL4LLM ACL 2025](https://aclanthology.org/2025.findings-acl.902/)：今日初筛候选及未选原因的正式来源。
+
+## 2026-08-29 第 12 次自动调研
+
+### 今日承接的问题
+
+- 来源于 `ideas/research_map.md` 的问题：Q2/Q5/Q6/Q10 与 H2/H3/H5：Graph-LLM 的 graph encoder 是否能消除纯序列化模型的 permutation shortcut？一个 reversible/deterministic discrete graph token 接口能否同时保持等价序列化稳定、结构可解码和最终输出稳定？
+- 今日检索目标：沿 `Graph-LLM graph isomorphism permutation invariance`、`GTokenLLM prediction equality node relabeling`、`fixed text topology intervention Graph-LLM`、`EDT-Former equivalent SMILES code` 队列，寻找能提供结构 token、deterministic serialization 或直接 permutation evidence 的新论文，并优先选择公开全文。
+
+### 检索与筛选
+
+- 检索范围与关键词：`Graph-LLM permutation invariance node relabeling`、`Graph Tokenization for Bridging Graphs and Transformers`、`molecular Graph-LLM equivalent SMILES robustness`、`fixed text topology intervention Graph-LLM`、`Graph-LLM topology OOD graph size extrapolation`；重点查看 arXiv HTML/PDF、ACL Anthology、OpenReview 和官方代码仓库。
+- 主要来源：[Graph Tokenization arXiv 页面](https://arxiv.org/abs/2603.11099)、[Graph Tokenization HTML 全文](https://arxiv.org/html/2603.11099)、[GraphTokenizer 官方代码](https://github.com/BUPT-GAMMA/Graph-Tokenization-for-Bridging-Graphs-and-Transformers)、[MolBasic arXiv 页面](https://arxiv.org/abs/2607.03007)、[TANS ACL 页面](https://aclanthology.org/2025.naacl-long.65/)、[CoEvoT arXiv 页面](https://arxiv.org/abs/2607.14114)、[GraphDO ACL 页面](https://aclanthology.org/2025.acl-long.321/)。
+- 初筛候选数：5 个主要论文/方向入口：Graph Tokenization、MolBasic、TANS、CoEvoT、GraphDO；另参考 GSPELL、GraphInsight 和 GDL4LLM 的正式页面确认相邻方向。
+- 去重结果：与 `papers/index.md` 的 arXiv ID、DOI 和规范化标题比较后，`arXiv:2603.11099` 是唯一新增精读条目；MolBasic、TANS、CoEvoT 和 GraphDO 均未命中现有索引，但分别属于 molecular structure comprehension、topology-to-text、co-evolving Graph-LLM prompting 和 serialization-order 方向，保留为后续候选，不重复新增。
+- 选择该论文精读的理由：GraphTokenizer 直接形式化 `reversibility` 与 `determinism`，用 Frequency-Guided Eulerian/CPP 加 BPE 构造离散 structural token，并公开 14 个 graph-level benchmark、GraphGPT/LLAGA 纯结构适配对照和官方代码。它为 H3 提供了可操作的结构瓶颈方案，也能把“接口级 invariance 设计”与“最终 causal topology use”严格分开。
+
+### 今日精读
+
+- 论文：Graph Tokenization for Bridging Graphs and Transformers
+- Paper ID：arXiv:2603.11099
+- 阅读级别：全文精读
+- 笔记：`notes/2603.11099.md`
+- PDF：`papers/2026_Guo_Graph_Tokenization_Bridging_Graphs_Transformers.pdf`；通过官方 arXiv `export.arxiv.org/pdf/2603.11099` 合法下载，已验证 `%PDF-1.7`、2,103,854 bytes、SHA256 `B280A1EDD68F2C923BD533D77A31D417E872FEF764F87B48904D51C685B10D4B`、`%%EOF`、30 页、未加密、30/30 页可解析；Poppler `pdfinfo` 通过，并渲染目检第 1、7、10、17、25、30 页。
+
+### 核心发现
+
+1. GraphTokenizer 将 labeled graph 转成 edge-covering 的 node-edge-node sequence，再以训练集 labeled-edge pattern frequency 指导 Feuler/FCPP 的 traversal，最后用 BPE 合并相邻 symbol。该接口可通过逆 BPE 与逆 serialization 恢复 topology up to isomorphism，结构处理在 Transformer 之前完成。
+2. 论文把 determinism 作为解决 graph ordering ambiguity 的关键属性，表 1 将 Feuler/FCPP 标为 reversible、deterministic，并称方法“almost invariant to graph permutation”；但没有对同一 graph 做 node relabeling、起点/方向、edge order、重复 labels 的逐样本 token/prediction equality 测试，因此这仍是形式化设计主张而非 empirical permutation 证据。
+3. 在 14 个跨 molecular、biomedical、social、academic 和 synthetic 的 graph-level benchmark 上，GT+GTE 在主表中取得 MOLHIV AUC `87.4`、COIL-DEL ACC `89.6`、Peptide-func AP `73.1`、ZINC MAE `0.131`；ZINC 上 BPE 将序列压缩到约原始长度的 10%。在 textualized pure-structure COIL-DEL 对照中，GraphGPT/LLAGA 为 `5.6/12.5` ACC，而 GraphTokenizer 为 `89.6`，说明显式离散结构接口有实用价值，但仍不能证明 LLM causal topology use。
+4. 关键消融显示 serialization method 与 BPE 都影响结果：含 BPE 的 MOLHIV AUC 中 BFS/DFS/TOPO/Eulerian/Feuler/CPP/FCPP 为 `72.3/76.0/73.2/84.5/87.4/86.9/86.4`；ZINC 上 `K=2000` 达到 `10.84x` compression ratio 和 `0.131` MAE。BPE vocabulary 中 4--6 node token 占 `41.5%`，但这只是 token 结构语义的间接证据。
+
+### 对研究命题的影响
+
+- 新增证据：H1 维持“部分支持”；GraphTokenizer 的 high score 来自显式 reversible serialization、BPE 和标准 Transformer，进一步说明结构输入/系统增益不能直接归因于 LLM causal use。H2 获得针对 ordering ambiguity 的正面接口设计证据；H5 维持“部分支持”，determinism/reversibility 与 final-output causal intervention 被清楚分开。H3 从“构想”调整为“待验证”。
+- 与历史结论一致或冲突之处：与 Lost in Serialization、CausalGraph2LLM、AMORE、EDT-Former、OOD-GraphLLM 和 2606.09484 一致，即 encoding/order robustness、representation decode、OOD gain、attention 或 ablation 不能单独推出 causal topology use；未发现冲突证据。
+- 当前仍不能得出的结论：不能证明 arbitrary isomorphic relabeling 下最终 Graph-LLM 输出一致；不能证明 key/irrelevant topology intervention 的方向正确/无关稳定；不能区分 serialization、BPE、Transformer readout 和 LLM 的责任；不能把多域 standard split 称为 topology-family OOD。
+
+### Idea 与最小实验
+
+- 新增或更新的假设：H3：显式、可逆、可干预的 discrete structural bottleneck 可能比单一 continuous projector 更适合建立可验证的 Graph-LLM topology evidence；状态：待验证。证据来源为 GraphTokenizer 的 reversible/deterministic interface、BPE structural vocabulary、decode path、compression 和 pure-structure benchmark 对照。
+- 最小可证伪实验：在相同 Transformer 和 matched labeled graphs 上比较 Feuler+BPE、raw edge-list/BFS/DFS、continuous graph projector 和 GNN encoder；执行 `10 relabelings × 4 edge orders × 3 starts/directions`，记录 serialized/BPE token equality、decode isomorphism、token count、hidden distance、prediction equality、output KL，再加入 fixed-text key/irrelevant topology intervention 和 held-out topology-family。
+- 对照组：GraphTokenizer+BERT/GTE、raw serialization、GNN-only、readout-only、text-only、random-label/text shuffle、shuffled graph embedding，以及 GraphToken/IP-GLLM/HLM-G/EDT-Former 的 continuous connector；molecular branch 额外加入 AMORE 的 `3+ valid SMILES`、no-RAG 和 dynamic-token ablation。
+- 支持条件：decode fidelity 为 100%；等价变换下 token、hidden state 和 output 稳定；关键 edge 干预方向正确、无关 edge 稳定；discrete bottleneck 在 held-out topology-family/PGR 上超过 readout-only/text-only，且不随 serialization order 大幅波动。
+- 失败条件：重复 label 的 tie-break 依赖原 node index；relabeling 造成 token/prediction flip；BPE 无法稳定 decode；GNN-only/readout-only 复现 full direction accuracy；或离散接口只改善 standard split、在 size/density/topology-family holdout 上失效。
+- 暂不建议的方向：不把“deterministic”标签、词表可视化、COIL-DEL 高分或 MNIST graph generation proof-of-concept 写成已证明的 LLM causal topology use；先完成 empirical isomorphism、fixed-text intervention 和 responsibility split。
+
+### 下一次研究任务
+
+- 未解决问题：Q10/H2/H3/H5：GraphTokenizer 的 frequency-guided traversal 在重复 labels、起点/方向、edge order 和 disconnected components 下是否真正 invariant；BPE 是否重新引入 serialization-order shortcut；该离散接口接入 LLM 后是否仍保持 hidden/output 等价？
+- 建议检索词或目标论文：`GraphTokenizer Feuler permutation code audit`、`Graph Tokenization BPE isomorphism consistency`、`reversible graph serialization repeated labels`、`Graph-LLM discrete token causal intervention`；优先运行官方代码的 10-way relabeling/decode audit，再将结果迁移到 GraphToken/IP-GLLM/HLM-G。
+
+### 参考来源
+
+- [arXiv 正式页面](https://arxiv.org/abs/2603.11099)：作者、Paper ID、arXiv v1、ICLR 2026 poster 状态和公开 PDF 入口。
+- [arXiv HTML 全文](https://arxiv.org/html/2603.11099)：形式化定义、Feuler/FCPP、BPE、实验表格、消融、局限和附录。
+- [GraphTokenizer 官方代码](https://github.com/BUPT-GAMMA/Graph-Tokenization-for-Bridging-Graphs-and-Transformers)：实现、配置、release/dev 分支和复现入口。
+- [MolBasic arXiv](https://arxiv.org/abs/2607.03007)、[TANS ACL](https://aclanthology.org/2025.naacl-long.65/)、[CoEvoT arXiv](https://arxiv.org/abs/2607.14114)、[GraphDO ACL](https://aclanthology.org/2025.acl-long.321/)：本轮初筛候选及后续结构接口/顺序鲁棒性方向。
