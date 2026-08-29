@@ -1,0 +1,18 @@
+# 论文索引
+
+此文件是论文去重与阅读状态的唯一总索引。优先使用 arXiv ID 或 DOI 作为 `Paper ID`；没有时使用规范化标题哈希或会议页面 ID。
+
+| Paper ID | 标题 | 年份 | 来源 | 六条证据线 | 阅读级别 | PDF | 笔记 | 首次发现 | 最近更新 |
+|---|---|---:|---|---|---|---|---|---|---|
+| arXiv:2605.03514 | Revisiting Graph-Tokenizing Large Language Models: A Systematic Evaluation of Graph Token Understanding | 2026 | [arXiv](https://arxiv.org/abs/2605.03514) | 1,3,4,6 | 全文精读 | [PDF](2026_Zhang_Revisiting_Graph_Tokenizing_LLMs.pdf) | [笔记](../notes/2605.03514.md) | 2026-08-15 | 2026-08-15 |
+| arXiv:2511.10234 | Lost in Serialization: Invariance and Generalization of LLM Graph Reasoners | 2026 | [arXiv](https://arxiv.org/abs/2511.10234) | 2,5,6 | 全文精读 | [PDF](2026_Herbst_Lost_in_Serialization.pdf) | [笔记](../notes/2511.10234.md) | 2026-08-16 | 2026-08-16 |
+| doi:10.1007/978-981-92-3520-9_19 | Interventional Prompting for Graph-LLMs: Approximating Atomic Causality at Scale | 2026 | [Springer](https://link.springer.com/chapter/10.1007/978-981-92-3520-9_19) | 1,4,5,6 | 全文精读 | [PDF（本地下载受阻）](https://link.springer.com/content/pdf/10.1007/978-981-92-3520-9_19.pdf?pdf=inline%20link) | [笔记](../notes/10.1007_978-981-92-3520-9_19.md) | 2026-08-17 | 2026-08-17 |
+| arXiv:2410.22372 | A Hierarchical Language Model For Interpretable Graph Reasoning | 2024 | [arXiv](https://arxiv.org/abs/2410.22372) | 1,2,3,5,6 | 全文精读 | [PDF](2024_Khurana_Hierarchical_Language_Model_For_Interpretable_Graph_Reasoning.pdf) | [笔记](../notes/2410.22372.md) | 2026-08-18 | 2026-08-18 |
+| doi:10.18653/v1/2024.findings-emnlp.415 | Explaining Graph Neural Networks with Large Language Models: A Counterfactual Perspective on Molecule Graphs | 2024 | [ACL Anthology](https://aclanthology.org/2024.findings-emnlp.415/) | 1,4,6 | 全文精读 | [PDF](2024_He_Explaining_Graph_Neural_Networks_with_Large_Language_Models.pdf) | [笔记](../notes/10.18653_v1_2024.findings-emnlp.415.md) | 2026-08-19 | 2026-08-19 |
+| doi:10.18653/v1/2025.findings-naacl.110 | CausalGraph2LLM: Evaluating LLMs for Causal Queries | 2025 | [ACL Anthology](https://aclanthology.org/2025.findings-naacl.110/) | 2,4,6 | 全文精读 | [PDF](2025_Sheth_CausalGraph2LLM.pdf) | [笔记](../notes/10.18653_v1_2025.findings-naacl.110.md) | 2026-08-22 | 2026-08-22 |
+| doi:10.18653/v1/2024.findings-emnlp.127 | Can LLM Graph Reasoning Generalize beyond Pattern Memorization? | 2024 | [ACL Anthology](https://aclanthology.org/2024.findings-emnlp.127/) | 5,6 | 全文精读 | [PDF](2024_Zhang_Can_LLM_Graph_Reasoning_Generalize_Beyond_Pattern_Memorization.pdf) | [笔记](../notes/10.18653_v1_2024.findings-emnlp.127.md) | 2026-08-23 | 2026-08-23 |
+| arXiv:2605.30247 | OOD-GraphLLM: Graph Large Language Model for Out-of-Distribution Generalized Drug Synergy Prediction | 2026 | [arXiv](https://arxiv.org/abs/2605.30247) | 1,5,6 | 全文精读 | [PDF](2026_Wang_OOD_GraphLLM.pdf) | [笔记](../notes/2605.30247.md) | 2026-08-25 | 2026-08-25 |
+| arXiv:2602.02742 | Entropy-Guided Dynamic Tokens for Graph-LLM Alignment in Molecular Understanding | 2026 | [arXiv](https://arxiv.org/abs/2602.02742) | 1,2,3,5,6 | 全文精读 | [PDF](2026_Jing_Entropy_Guided_Dynamic_Tokens_Graph_LLM.pdf) | [笔记](../notes/2602.02742.md) | 2026-08-26 | 2026-08-26 |
+| doi:10.1186/s13321-025-01079-0 | Measuring Chemical LLM robustness to molecular representations: a SMILES variation-based framework | 2025 | [Springer Nature](https://link.springer.com/article/10.1186/s13321-025-01079-0) | 2,3,5,6 | 全文精读 | [PDF（本地下载受阻）](https://link.springer.com/content/pdf/10.1186/s13321-025-01079-0.pdf) | [笔记](../notes/10.1186_s13321-025-01079-0.md) | 2026-08-27 | 2026-08-27 |
+
+阅读级别只能使用：`候选`、`摘要级`、`全文精读`、`待复核`。重读论文时保留原记录并更新“最近更新”，不得新增重复行。
