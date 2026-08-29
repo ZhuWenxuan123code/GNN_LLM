@@ -544,3 +544,59 @@
 - [AMORE 作者代码与数据](https://github.com/ChemistryLLMs/AMORE)：RDKit augmentation、ChEBI-20/QM9 数据、FAISS hidden-state evaluation 和复现实验入口。
 - [PubMed 记录](https://pubmed.ncbi.nlm.nih.gov/41168806/)：作者、DOI、期刊、发表日期与 PMCID 元数据。
 - [Springer PDF URL](https://link.springer.com/content/pdf/10.1186/s13321-025-01079-0.pdf)：公开 PDF 入口；本轮返回下载 challenge，未形成合法本地归档。
+
+## 2026-08-29 第 11 次自动调研
+
+### 今日承接的问题
+
+- 来源于 `ideas/research_map.md` 的问题：Q2/Q5/Q6 与 Q8/Q9：如何把 node permutation、encoding/order、fixed-text topology intervention 和 GNN/LLM/readout responsibility split 放入同一条 Graph-LLM 证据链；同时收束此前已下载但未归档的 graph-isomorphism 论文。
+- 今日检索目标：沿 `Graph-LLM graph isomorphism permutation invariance`、`GTokenLLM prediction equality node relabeling`、`fixed text topology intervention Graph-LLM` 和 `EDT-Former equivalent SMILES code` 检索约 5 个候选，优先补齐直接测试同拓扑随机重标记的中断论文。
+
+### 检索与筛选
+
+- 检索范围与关键词：`Graph-LLM graph isomorphism permutation invariance`、`GTokenLLM prediction equality node relabeling`、`fixed text topology intervention Graph-LLM`、`EDT-Former equivalent SMILES code`、`Graph-LLM topology OOD graph size extrapolation`；重点查看 arXiv、ACL Anthology 和正式论文 HTML/PDF 页面。
+- 主要来源：[arXiv:2606.09484](https://arxiv.org/abs/2606.09484)、[论文 HTML](https://arxiv.org/html/2606.09484)、[GraphDO ACL 页面](https://aclanthology.org/2025.acl-long.321/)、[CoEvoT arXiv 页面](https://arxiv.org/abs/2607.14114)、[GraphInsight ACL 页面](https://aclanthology.org/2025.acl-long.591/)、[GDL4LLM ACL 页面](https://aclanthology.org/2025.findings-acl.902/)。
+- 初筛候选数：5 个主要候选论文/方向入口：arXiv:2606.09484、GraphDO、CoEvoT、GraphInsight、GDL4LLM。
+- 去重结果：`arXiv:2606.09484` 尚未出现在 `papers/index.md`，但仓库中已有一份此前中断下载的同论文 PDF；与索引中的 arXiv ID、DOI 和规范化标题比较后，本轮只新增 1 条索引记录并复用该 PDF，没有重复下载或重复建档。GraphDO、CoEvoT、GraphInsight 和 GDL4LLM 均保留为候选，未新增重复条目。
+- 选择该论文精读的理由：它直接把 ordinary graph-isomorphism detection 与同拓扑随机 node relabeling 分成两个实验；普通检测接近满分而重标记任务接近随机，是当前队列中最直接的 permutation shortcut 证据，也正好完成历史中断的四项状态更新。它虽不是 GNN-LLM，但能为 Graph-LLM protocol 提供清晰的纯序列化边界对照。
+
+### 今日精读
+
+- 论文：Detecting Differences Is Not Understanding Structure: Large Language Models Fail at Graph Isomorphism
+- Paper ID：arXiv:2606.09484
+- 阅读级别：全文精读
+- 笔记：`notes/2606.09484.md`
+- PDF：`papers/2026_Thushalika_Detecting_Differences_Graph_Isomorphism.pdf`；复用仓库中已存在的官方 arXiv PDF，核验 `%PDF-1.7`、176057 bytes、SHA256 `C4CB8BB1A8D8D34311EFE554152BA9BE911D5D718F1112B9EBA52E676644F253`、`%%EOF`、6 页、未加密；使用 bundled Poppler 渲染并目检首页、主结果页、置换结果页和末页。全文通过官方 arXiv HTML 阅读 abstract、introduction、related work、experimental setup、两组实验、limitations/conclusion 和 references。
+
+### 核心发现
+
+1. 论文在 400 个非同构图对上测试 GPT-4o-mini、Gemini 2.5 Flash 和 Llama 3.3 70B Instruct，输入为 edge list、edge index 或 adjacency matrix；三种模型普通 isomorphism detection 总体接近满分，连 1-WL indistinguishable 的类别也保持很高准确率。
+2. 在另一个 400 个随机连通图及其随机节点重标记同构副本的实验中，OpenAI 的准确率为 0-18%，Gemini 为 0-0.2%，Llama 为 2-39.2%；同一模型在三种 serialization 之间也明显波动，且 instructed prompt 不能稳定修复问题。模型常把同拓扑重标记造成的序列差异判断为 non-isomorphic。
+3. 该结果直接说明 ordinary task accuracy 与 permutation-invariance robustness 可以脱钩，但没有 hidden-state probe、fixed-text key/irrelevant topology intervention、GNN/LLM/readout responsibility split 或 held-out topology-family OOD；因此它是强 shortcut/robustness 诊断，不是 Graph-LLM 的 causal topology-use 证明。
+
+### 对研究命题的影响
+
+- 新增证据：H2 维持“部分支持”并得到更直接的纯序列化证据；H5 从“待验证”调整为“部分支持”，因为同一评测中 ordinary isomorphism accuracy 近满分而 permutation-invariance 只有 0-39.2%，支持“任务高分与不变量稳定性是可分离轴”。H1 获得边界补充，但仍不外推为 GNN-LLM 结论。
+- 与历史结论一致或冲突之处：与 GTEval、Lost in Serialization、CausalGraph2LLM、AMORE、EDT-Former 和 OOD-GraphLLM 对“accuracy、attention、单一 ablation 或 chemical/OOD gain 不等于结构因果使用”的判断一致；它进一步把 node relabeling 作为可复现的直接 failure test，没有冲突证据。
+- 当前仍不能得出的结论：不能证明所有 LLM 都不具备结构推理，不能定位失败究竟来自 tokenization、节点编号、attention、推理策略还是输出解析；更不能证明 GraphToken、IP-GLLM、HLM-G、EDT-Former 或 OOD-GraphLLM 的 LLM 本身未使用 topology。
+
+### Idea 与最小实验
+
+- 新增或更新的假设：更新 H5 为“部分支持”：对 Graph-LLM，ordinary graph-task accuracy 与同拓扑 node relabeling 的 prediction equality 必须分别报告；即使原始编号上高分，若 relabeling flip rate 高，则不能称为稳定图结构表征。H5 的 causal-use 部分仍待验证。
+- 最小可证伪实验：在 GraphToken、IP-GLLM、HLM-G、EDT-Former 和 OOD-GraphLLM 上固定节点文本/特征、任务语义与输出格式，执行 `10 relabelings × encoding/order variants`，记录逐样本 prediction equality、output KL、hidden-state distance 和最终答案 flip rate；随后在同一批样本中只改变关键边或无关边，测 direction accuracy 与 irrelevant-intervention stability。
+- 对照组：base Graph-LLM、GNN-only、LLM-only、encoder/readout-only、text-only、shuffled graph embedding、random-label/text shuffle，以及 canonical/random serialization；molecular 分支额外加入 3+ valid SMILES、no-RAG 和 dynamic-token/connector ablation。
+- 支持条件：等价重标记和序列化下 prediction equality 高；关键拓扑干预方向正确、无关干预稳定；完整模型在 direction accuracy 上超过 readout-only/text-only，并在 held-out topology family 保持。
+- 失败条件：普通任务高分但 relabeling flip rate 接近随机；关键干预无响应或方向错误；readout-only/GNN-only 复现完整模型；或变化主要由 tokenization、SMILES traversal、文本模板和 RAG 解释。
+- 暂不建议的方向：不把该论文的 permutation failure 直接写成 Graph-LLM failure，也不把通过单一 permutation test 写成 causal topology use；必须与 fixed-text intervention、责任分离和 topology-OOD 同时报告。
+
+### 下一次研究任务
+
+- 未解决问题：Q2/Q5/Q6/Q8/Q9/H5：Graph-LLM 的 graph encoder 是否能消除纯序列化模型的 permutation shortcut？若能，connector、LLM hidden state 和最终输出是否仍保持等价；若不能，失败发生在哪一层？
+- 建议检索词或目标论文：`Graph-LLM graph isomorphism permutation invariance`、`GTokenLLM prediction equality node relabeling`、`Graph-LLM fixed text topology intervention`、`EDT-Former equivalent SMILES code`、`OOD-GraphLLM readout-only ablation`；优先把 2606.09484 的 protocol 与 AMORE 的 `Acc@1/MRR`、EDT-Former 的 patch NMI 和 OOD-GraphLLM 的 no-RAG/component split 组合。
+
+### 参考来源
+
+- [arXiv abstract page](https://arxiv.org/abs/2606.09484)：论文元数据、作者、版本和摘要。
+- [arXiv HTML 全文](https://arxiv.org/html/2606.09484)：三种模型、两种 prompt、三种 serialization、400+400 图对、表 1-3、观察、解释与 limitations。
+- [arXiv PDF](https://arxiv.org/pdf/2606.09484)：公开 PDF 下载入口；本地文件完成 header、size、SHA256、EOF、page count、encryption 和渲染检查。
+- [GraphDO ACL 2025](https://aclanthology.org/2025.acl-long.321/)、[CoEvoT arXiv](https://arxiv.org/abs/2607.14114)、[GraphInsight ACL 2025](https://aclanthology.org/2025.acl-long.591/)、[GDL4LLM ACL 2025](https://aclanthology.org/2025.findings-acl.902/)：今日初筛候选及未选原因的正式来源。
