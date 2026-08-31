@@ -657,3 +657,204 @@
 - [arXiv HTML 全文](https://arxiv.org/html/2603.11099)：形式化定义、Feuler/FCPP、BPE、实验表格、消融、局限和附录。
 - [GraphTokenizer 官方代码](https://github.com/BUPT-GAMMA/Graph-Tokenization-for-Bridging-Graphs-and-Transformers)：实现、配置、release/dev 分支和复现入口。
 - [MolBasic arXiv](https://arxiv.org/abs/2607.03007)、[TANS ACL](https://aclanthology.org/2025.naacl-long.65/)、[CoEvoT arXiv](https://arxiv.org/abs/2607.14114)、[GraphDO ACL](https://aclanthology.org/2025.acl-long.321/)：本轮初筛候选及后续结构接口/顺序鲁棒性方向。
+
+## 2026-08-30 第 13 次自动调研
+
+### 研究问题与模式
+
+- 连续主问题：如何让 Graph-LLM 的图结构表示同时满足 structural decodability、permutation consistency、causal topology use 和 cross-topology generalization，而不是把标准任务分数、attention 或 representation probe 当作结构因果证据。
+- 今日聚焦：Q10/H2/H3/H5，并新增 Q11：在 reversible discrete interface 中，task-conditioned complementary views 能否在有限深度和 token budget 下同时改善 local/global topology 任务，并保持等价序列化稳定与可定位因果干预？
+- 今日模式：强化已有 I1“置换一致且可定位干预的离散图 Tokenizer”，不新增 Idea。
+
+### 检索、去重与选文
+
+- 检索词：`graph tokenization permutation invariant reversible serialization`、`permutation invariant graph serialization`、`Graph-LLM node relabeling`、`graph tokenization finite depth spectral random walk`、`graph tokenizer causal intervention`。
+- 初筛方向：Lost in Tokenization、GQT、TokenGT、SwapGT、Discovering Mechanisms in Tokenized Graph Transformers；另复核 GraphTokenizer、Lost in Serialization、2606.09484 与 CausalGraph2LLM 的已归档结论。
+- 论文去重：今日唯一新增归档论文为 arXiv:2605.22471；GraphTokenizer 已在索引中，GQT/TokenGT/SwapGT 作为相邻工作用于 Novelty Gate，不重复写入论文归档。
+- Idea 去重：不新增 I2；今日结果用于强化 I1 的 view choice、addressability、fixed-text intervention 和 responsibility split 约束。
+- 选文理由：该论文直接给出不同 graph tokenization 在 finite-depth、information loss 和 optimization stability 上的理论边界与受控比较，能检验 I1 是否应从单一序列化扩展为 complementary-view 对照。
+
+### 精读论文与验证
+
+- 论文：[Lost in Tokenization: Fundamental Trade-offs in Graph Tokenization for Transformers](https://arxiv.org/abs/2605.22471)，Maya Bechler-Speicher 等，arXiv:2605.22471，2026。
+- 阅读级别：全文精读，包括主文、理论结果、实验设置、结论与附录 A.1--A.7；本轮只精读这一篇论文。
+- PDF：`papers/2026_Bechler-Speicher_Lost_in_Tokenization.pdf`；笔记：`notes/2605.22471.md`。
+- PDF 验证：官方公开 export.arxiv.org PDF，HTTP 200，`Content-Type: application/pdf`，文件 851833 bytes；PDF 1.7、22 页、未加密；SHA-256 为 `4AFE3DA25F13EBE0E96A4110A7217EE4FAA13FFFBB335C1710610FC78A431113`；pypdf 读取 22/22 页文本，Poppler 渲染并目检第 1、8、11、22 页。
+
+### 关键发现与证据边界
+
+- 论文将 adjacency、spectral 和 random-walk 视为互补输入：full spectral tokenization 可无损但可能 ill-conditioned；random-walk return probabilities 在任意长度仍有 lossy 极限；adjacency 可无损但依赖 dataset node order，未自然满足 permutation equivariance。证据类型：形式化定义与理论分析。
+- Theorem 1--4 给出有限深度/带宽/复杂度限制：adjacency 的 connectivity 需要至少 logarithmic depth（在复杂度假设下），random-walk 不能区分某些 planar/non-planar GM-switching 图，截断 spectral/adjacency 不能稳定恢复部分全局性质。证据类型：定理、构造和下界证明。
+- 受控实验中，single view 没有统一赢家；combined view 在部分任务提升，但提升同时受信息充分性、Transformer depth、token budget 和优化条件影响。论文报告同一 Transformer、多个 depth/width 和 3 seeds 的 synthetic/real-world 比较；证据类型：实验表格与合成恢复实验。
+- 最重要不足：论文没有 Graph-LLM 最终输出上的 fixed-text key/irrelevant topology intervention，也没有 GNN/LLM/readout responsibility split、随机 relabeling 的离散 token equality 或 topology-family OOD。因此它能证明 tokenization 的 finite-depth/lossiness/training trade-off，不能单独证明 LLM causal topology use。证据类型：实验设计缺口与研究者归因边界；相关局限已在 `notes/2605.22471.md` 分层记录。
+
+### 对研究地图与假设的更新
+
+- H1：维持“部分支持”。tokenization 选择会改变有限深度下可表达/可优化的结构信息，但这仍不是 Graph-LLM 的最终因果证据。
+- H2：维持“部分支持”。spectral/random-walk 的等变输入与 adjacency 的顺序依赖形成明确对照，但 GraphTokenizer 的实测 relabeling equality 仍待运行。
+- H3：维持“待验证”。今日论文强化了 complementary-view 的动机，但 discrete structural bottleneck 是否带来可定位、方向正确的 topology intervention 尚无证据。
+- H5：维持“部分支持”。需区分 information sufficiency、permutation equivariance、finite-depth reachability、optimization stability 与 causal use；不能把 combined-view standard-split 增益直接归因于 LLM。
+- H10：维持“待验证”。今日实验不是 topology-family OOD，仍需 size/density/topology-family holdout。
+- 研究地图新增 Q11，并将 I1 的下一步从单一 serialization audit 扩展为 single-view 与 complementary-view 的 matched ablation。
+
+### Idea 与 Novelty Gate
+
+- 候选 Idea：I1“置换一致且可定位干预的离散图 Tokenizer”，模式为强化，状态保持“候选”，评分保持 8/10。
+- 结合依据：今日 Lost in Tokenization；历史 GraphTokenizer、Lost in Serialization、Detecting Differences Is Not Understanding Structure、CausalGraph2LLM；当前 H2/H3/H5 与 Q2/Q3/Q4/Q10/Q11。
+- 最近工作与最小差异：Lost in Tokenization 研究 tokenization trade-off 但没有 Graph-LLM causal protocol；GraphTokenizer 提供 reversible/deterministic serialization+BPE 但未做系统 equality/intervention/responsibility audit；GQT 使用 GNN+RVQ 离散 token 但未回答 fixed-text topology causality；TokenGT 提供 permutation-equivariant token design 但未做最终输出 causal split；SwapGT 生成多样 token sequence 但不等同于 I1 的可定位干预。I1 的最小实质差异是把 discrete addressability、等价变换稳定性、fixed-text key/irrelevant intervention、模块责任拆分和 topology-family OOD 作为一个联合可证伪协议，不把 multi-view 本身称为创新。
+- Novelty Gate 结论：未发现上述联合协议的完全重复工作；但相邻的 invariant/canonical/discrete token 方法使 Novelty 仅 1/2，且不使用“首次”表述。若后续只有 standard-split 或 multi-view 增益，I1 应降级为评测复现。
+
+### 今日唯一推荐 Idea 与最小实验
+
+- 方法：以 GraphTokenizer reversible serialization 为接口，比较 local edge-covering、global spectral、random-walk/diffusion、single reversible view 与 complementary-view；加入 token/representation/prediction consistency、可定位 structural token、fixed-text key/irrelevant intervention 和 GNN/LLM/readout responsibility split。
+- 核心预测：若离散接口确实承载可验证 topology evidence，等价变换下 serialized/BPE token、hidden state 和输出应稳定，关键边干预应方向正确，无关边干预应稳定，且完整模型在 topology-family OOD 上不能被 readout-only/GNN-only 完全复现。
+- Baseline 与对照：GraphTokenizer Feuler/FCPP+BPE、raw edge-list/BFS/DFS、continuous projector、GNN-only、readout-only、LLM/Transformer-only、shuffled structural token；matched fixed-text 与非固定文本干预、random label/text shuffle。
+- 关键消融：去 consistency loss、addressable token、intervention loss、各个 view、randomized BPE、tie-break、不同 depth/width/token budget；报告 decode fidelity、token equality、hidden distance、output KL、direction accuracy、irrelevant stability 与 topology-OOD。
+- 支持条件：decode fidelity 100%，等价变换稳定，关键/无关干预分别通过，完整模型相对责任拆分基线在 held-out topology family 保持优势。
+- 失败条件：重复 label 或原 node index 触发 tie-break shortcut；relabeling 导致 token/prediction flip；BPE 无法稳定 decode；GNN-only/readout-only 复现完整模型；或只改善 standard split、在 topology-OOD 失效。
+- 资源与 7 天第一步：先不训练大模型，运行 GraphTokenizer 官方 serialization/decode 路径；使用 100--1000 个小图，执行 `10 relabelings × 4 edge orders × 3 starts/directions`，覆盖 repeated labels 和 disconnected components，随后在相同 Transformer/token budget 下做 single/complementary-view 小型对照。算力需求待该审计后确认。
+- 评分：Novelty 1/2、Importance 2/2、Falsifiability 2/2、Feasibility 1/2、Thesis Fit 2/2，总分 8/10。
+
+### 下一次研究问题
+
+- 先回答：GraphTokenizer 的 frequency-guided traversal 在 repeated labels、edge order、起点/方向和 disconnected components 下是否真的保持 sequence/BPE/decode equality？若保持，complementary-view 是否仍能在 matched token budget 下改善 causal intervention 与 topology-family OOD？
+- 优先动作：运行官方代码小审计；只有通过接口稳定性检查后，才进入 task-conditioned view ablation 和 responsibility split。
+
+### 参考来源
+
+- [arXiv 正式页面](https://arxiv.org/abs/2605.22471)、[HTML 全文](https://arxiv.org/html/2605.22471)：论文元数据、理论结果、实验与附录。
+- [GraphTokenizer](https://arxiv.org/abs/2603.11099)、[GQT](https://arxiv.org/abs/2410.13798)、[TokenGT](https://neurips.cc/virtual/2022/poster/54611)、[SwapGT](https://openreview.net/forum?id=ofBqR4l0TD)：相邻工作与 Novelty Gate 对照。
+- [GraphTokenizer 官方代码](https://github.com/BUPT-GAMMA/Graph-Tokenization-for-Bridging-Graphs-and-Transformers)：下一次 serialization/decode audit 的复现入口。
+
+## 2026-08-30 第 15 次自动调研
+
+### 研究问题与模式
+
+- 连续主问题：如何让 Graph-LLM 的图结构接口同时满足 structural decodability、permutation consistency、causal topology use 和 cross-topology generalization，而不是把结构提示、标准任务增益或语义词汇效果误判为 LLM 的结构因果理解。
+- 今日聚焦：承接 Q10/Q11 与 H1/H2/H3/H5/H10，追问 ordered-WL/color graph-to-prompt encoding 是否提供了可审计的离散结构瓶颈，还是主要依赖外部 WL 计算和自然语言 semantic anchor。
+- 今日模式：强化已有 I1“置换一致且可定位干预的离散图 Tokenizer”，不新增 Idea。Colorful Talks with Graphs 作为 ordered-WL、语义颜色词和 lexical-control 的相邻基线。
+
+### 检索、去重与选文
+
+- 检索词：Graph-LLM graph encoding Weisfeiler Lehman color tokens、human interpretable graph encodings LLM、graph tokenizer permutation invariance、same partition opaque token graph、fixed text topology intervention graph LLM、mechanistic tokenized graph transformer。
+- 初筛方向：Colorful Talks with Graphs、GraphTokenizer、GQT、TokenGT、Discovering Mechanisms in Tokenized Graph Transformers、Graph-KV、Lost in Serialization；GraphTokenizer、GQT、TokenGT、Graph-KV 和 mechanistic graph-token work 仅用于 Novelty Gate，不重复写入今日索引。
+- 论文去重：今日唯一新增归档论文为 doi:10.18653/v1/2026.findings-acl.2049；此前 papers/index.md 无该 DOI、论文标题或本地笔记。
+- Idea 去重：不新增 I2；把 same-WL partition 的 natural-color versus opaque-token ablation 加入 I1 的 semantic-anchor shortcut controls，并保留 GraphTokenizer、Graph-KV mask-only、GNN-only/readout-only 和 topology-OOD 对照。
+- 选文理由：该论文同时提供 ordered 1-WL 离散 descriptor、自然颜色词、压缩 prompt 和同一 WL partition 的 lexical ablation，既能补充 H3 的结构瓶颈证据，也能直接检验“结构 descriptor 增益不等于 LLM causal topology use”的边界。
+
+### 精读论文与验证
+
+- 论文：[Colorful Talks with Graphs: Human-Interpretable Graph Encodings for Large Language Models](https://aclanthology.org/2026.findings-acl.2049/)，Zangari、Baghershahi、Medya，doi:10.18653/v1/2026.findings-acl.2049，ACL Findings 2026。
+- 阅读级别：全文精读，包括主文、方法、synthetic graph tasks、Cora/Citeseer/PubMed/OGBN-ArXiv node classification、compressed prompt、color ablation、size scalability、limitations 和 reproducibility appendix；本轮只精读这一篇论文。
+- PDF：papers/2026_Zangari_Colorful_Talks_with_Graphs.pdf；笔记：notes/10.18653_v1_2026.findings-acl.2049.md。
+- PDF 下载：PowerShell Invoke-WebRequest 因 TLS Authentication failed 未采用；改用 Python urllib.request 从 ACL 官方 PDF 下载，HTTP 200，Content-Type 为 application/pdf，大小 520828 bytes。
+- PDF 验证：文件头为 %PDF-1.7，尾部含 %%EOF，SHA-256 为 FEE55376F15DC2BF775C967F7623D7BC2116F973459F112F62DDA0777099D0F8；pdfinfo 报告 22 页、A4、未加密；Poppler 成功提取文本并渲染，目检第 1、11、22 页，标题、表格、参考文献和末页附录版面可读。
+
+### 关键发现与证据边界
+
+- 方法路径是 Graph -> adjacency list -> ordered 1-WL refinement -> WL labels/colors -> text prompt -> GPT-4o/GPT-3.5 -> answer。外部算法完成邻居标签排序、全局 message 编号和颜色映射，LLM 不负责从原始图中学习该结构摘要。
+- GPT-4o cycle check 的 Acc 为 TLG-A 89.5、TLG-F 91.5、L-OWL 92.0、C-OWL 92.5、CL-OWL 93.0；shortest path 为 87.80、83.74、91.87、88.62、86.99，说明收益依赖任务。50-node Cora compressed setting 中 TLG-A 的 1/2/3-hop 为 30/40/45%，C-OWL 为 75%；外部 Cora 表中 C-OWL 为 68.9%、CL-OWL 为 66.4%。
+- 同一 WL partition 的 color ablation 中 TLG-A、C-OWL、L-OWL、CL-OWL 为 49.0/68.9/63.6/66.4%，opaque Hue i 和普通颜色名只有 15.2/6.3%；该结果是 semantic-anchor/lexical shortcut 的直接证据，不是 topology causal-use 的直接证据。
+- 图规模和任务存在明显边界：graph-level triangle counting 的 CL-OWL accuracy 约 14.5%，局部 triangle membership 约 68.3%；ER/path maximum-flow 的 C-OWL 从 n=50 的 81.8% 变为 n=100 的 75%，TLG-A 从 45% 变为 0%。作者还说明每个 configuration 只运行一次，没有标准差。
+- 结构证据审计：结构被输入为“是”；descriptor-level 可读性为“部分”；permutation/invariance 只有设计主张、无逐样本 relabeling/output equality；没有 fixed-text key/irrelevant topology intervention、text shuffle、GNN/LLM/readout responsibility split 或 held-out topology-family OOD。最重要不足的证据类型是实验设计缺口、外部预计算组件混杂和 lexical shortcut 对照不足。
+
+### 对研究地图与假设的更新
+
+- H1：维持“部分支持”。任务收益和可读性不等于 LLM causal topology use；ordered-WL 和颜色映射的外部预计算使责任边界更清楚。
+- H2：维持“部分支持”。论文把 permutation-invariant 作为设计目标，却没有 node relabeling、edge order、起点/方向或 isomorphism equality 的最终输出测试。
+- H3：维持“待验证”并强化。离散 WL descriptor 值得作为可审计 bottleneck，但 same-WL 的 natural-color/opaque-token 差异要求 I1 加入 semantic-anchor control。
+- H5：维持“部分支持”。representation robustness、语义捷径与 causal topology use 在本论文中仍是分离轴；自然颜色词影响结果不能替代 fixed-text topology intervention。
+- H10：维持“待验证”。BA、ER、Path、长距离图和多个 citation-network 数据集是规模/图类型压力测试，不是 held-out topology-family 或 generator/transitivity OOD。
+
+### Idea 与 Novelty Gate
+
+- 候选 Idea：I1“置换一致且可定位干预的离散图 Tokenizer”，模式为强化，状态保持“候选”，评分保持 8/10；不新增 I2。
+- 结合依据：今日 Colorful Talks with Graphs；历史 GraphTokenizer、Lost in Tokenization、Graph-KV、Lost in Serialization；当前 H1/H2/H3/H5/H10 与 Q2/Q3/Q4/Q10/Q11。
+- 最近工作与最小差异：Colorful Talks 解决 ordered-WL/color graph-to-prompt encoding 和 lexical color ablation；GraphTokenizer 解决 reversible/deterministic serialization+BPE；GQT 解决 learned RVQ hierarchical discrete tokens；Discovering Mechanisms 解决 permutation-augmented tokenized Transformer 的 activation/circuit analysis；Graph-KV 解决 LLM-side KV structural routing。I1 的最小实质差异不是 color、multi-view、relabeling 或 mask 中任一单项，而是把 discrete addressability、等价变换 stability、fixed-text key/irrelevant intervention、GNN/LLM/readout responsibility split 和 topology-family OOD 作为同一联合可证伪协议。
+- Novelty Gate 结论：未发现上述工作把该联合协议作为完整重复方法；Colorful Talks 的 semantic-anchor 结果使 Novelty 仍只记 1/2，不使用“首次”表述。若 I1 只提升 standard split、prompt length 或自然语言颜色词，必须降级为评测复现。
+
+### 今日唯一推荐 Idea 与最小实验
+
+- 方法：以 GraphTokenizer reversible serialization/BPE 为主接口，加入 ordered-WL natural colors、opaque same-partition tokens、raw serialization、Graph-KV mask-only、continuous projector、GNN-only、readout-only 和 shuffled structural tokens。
+- 核心预测：在 10 relabelings、4 edge orders、3 starts/directions 下，真正稳定的离散接口应同时保持 serialized/BPE equality、decode isomorphism、hidden/output consistency；固定节点文本的 key-edge 应有方向正确响应，irrelevant edge 应保持 prediction equality；去除颜色语义后仍应超过 readout-only。
+- 关键对照：natural color versus opaque Hue/name、random-label/text shuffle、mask shuffle、retriever-randomized Graph-KV、fixed-text versus non-fixed-text、GNN-only/LLM-only/readout-only，以及 topology-family holdout。
+- 支持条件：decode fidelity 100%；等价变换下 token/hidden/output 稳定；key-edge direction accuracy 高、irrelevant intervention 稳定；完整模型在 topology-family OOD 上超过 single-view、semantic-anchor、Graph-KV mask-only 和 GNN/readout-only。
+- 失败条件：natural colors 或 Graph-KV mask-only 复现全部增益；opaque same-partition token 退化揭示收益主要来自词汇先验；relabeling、edge order、BPE 或 node address 造成 output flip；关键 topology 无方向响应；或优势只存在于 standard split、prompt 长度和顺序摆放。
+- 资源与 7 天第一步：先运行 GraphTokenizer 官方 serialization/decode 小审计，不训练大模型；使用 100--1000 个小图覆盖 repeated labels 和 disconnected components，记录 serialized/BPE equality、decode isomorphism，再在 matched token/compute budget 下加入 ordered-WL/color 与 Graph-KV mask-only comparator。完整 Graph-KV 复现的 Llama-3.1-8B、多 GPU 与长上下文成本暂不作为第一步。
+
+### 下一次研究问题
+
+GraphTokenizer 的 frequency-guided traversal 在 repeated labels、edge order、起点/方向和 disconnected components 下，是否同时保持 sequence/BPE/decode equality；加入 semantic-anchor control 后，离散接口是否仍能在 fixed-text topology intervention 和 topology-family OOD 上超过 Graph-KV mask-only 与 readout-only？
+
+### 参考来源
+
+- [ACL Anthology paper page](https://aclanthology.org/2026.findings-acl.2049/)：元数据与摘要。
+- [ACL 官方 PDF](https://aclanthology.org/2026.findings-acl.2049.pdf)：全文、方法、实验、附录和 limitations。
+- [GraphTokenizer](https://arxiv.org/abs/2603.11099)、[Lost in Tokenization](https://arxiv.org/abs/2605.22471)、[Graph-KV](https://arxiv.org/abs/2506.07334)、[GQT](https://arxiv.org/abs/2410.13798)、[Discovering Mechanisms in Tokenized Graph Transformers](https://openreview.net/pdf?id=0WEuCiokZq)、[Lost in Serialization](https://arxiv.org/abs/2511.10234)：Novelty Gate 相邻工作。
+
+## 2026-08-30 第 14 次自动调研
+
+### 研究问题与模式
+
+- 连续主问题：如何让 Graph-LLM 的图结构接口同时满足 structural decodability、permutation consistency、causal topology use 和 cross-topology generalization，而不是把顺序稳健、标准任务分数或 attention 当作结构因果证据。
+- 今日聚焦：承接 Q10/Q11 与 H2/H3/H5/H6/H10；具体追问 Graph-KV-style LLM-side graph mask 是否只是更强的 routing baseline，还是能在固定文本下证明拓扑被因果使用。
+- 今日模式：强化已有 I1“置换一致且可定位干预的离散图 Tokenizer”，不新增 Idea。Graph-KV 只作为 mask/shared-PE 的相邻对照和责任拆分入口。
+
+### 检索、去重与选文
+
+- 检索词：`Graph-LLM structural bias KV cache`、`graph mask large language model topology`、`Graph-KV permutation invariance`、`discrete graph token causal intervention`、`Graph-LLM responsibility split topology OOD`。
+- 初筛方向：Graph-KV、Discovering Mechanisms in Tokenized Graph Transformers、GQT、TokenGT、GraSAME、Graph Language Models；另复核 GraphTokenizer、Lost in Tokenization、Lost in Serialization、Detecting Differences Is Not Understanding Structure 与 CausalGraph2LLM。
+- 论文去重：今日唯一新增归档论文为 arXiv:2506.07334；GraphTokenizer、GQT、TokenGT、GraSAME、Graph Language Models 和 Discovering Mechanisms 作为 Novelty Gate 相邻工作，不重复写入索引。OpenReview 受挑战页面限制的论文不作为今日精读对象。
+- Idea 去重：不新增 I2；Graph-KV 用于强化 I1 的 mask-only baseline、retriever/position confound 控制和 matched responsibility audit。
+- 选文理由：Graph-KV 直接把图邻接写入 LLM 的 KV-cache attention mask，并报告 RAG、topic classification、chunk-placement/distractor 与大邻居压力测试，最适合检验现有 I1 是否必须与 LLM-side structural routing 做同预算对照。
+
+### 精读论文与验证
+
+- 论文：[Graph-KV: Breaking Sequence via Injecting Structural Biases into Large Language Models](https://arxiv.org/abs/2506.07334)，Wang 等，arXiv:2506.07334，2025；NeurIPS 2025 poster。
+- 阅读级别：全文精读，包括主文、方法、RAG/Arxiv-QA/topic classification/stress test、结论、局限、NeurIPS checklist 与附录 A.1--A.2；本轮只精读这一篇论文。
+- PDF：`papers/2025_Wang_Graph-KV_Breaking_Sequence_Structural_Biases.pdf`；笔记：`notes/2506.07334.md`。
+- PDF 验证：官方 arXiv PDF，HTTP 200，`Content-Type: application/pdf`，文件 3331011 bytes；PDF 1.7、30 页、未加密；SHA-256 为 `a112bd50c4246175c8431b74465b714ef3d7f68692031e3262b397f0bd34ac7a`；bundled pypdf 读取 30/30 页文本，Poppler 渲染并目检第 1、10、16、22、30 页，版面、表格和附录可读。
+
+### 关键发现与证据边界
+
+- Graph-KV 将 source/target 文本块先独立 prefill 为 KV-cache，再按 source→target 图邻接限制 attention，目标节点更新只读取其 source 邻居的 K/V；共享 positional embedding 将 source、target 和 query/answer 放入同一上下文坐标范围。该机制的复杂度为初始 `O(|V|L^2)`、edge update `O(|E|L^2)`、生成阶段 `O(|V|L)`，证据类型为方法定义与复杂度分析。
+- 在 top-3 RAG、Arxiv-QA、Cora/Pubmed topic classification 和 synthetic star-neighbor stress test 中，Graph-KV 相对 Sequential/Block-RAG 有任务级或扩展性收益；chunk placement、distractor 与邻居数量实验说明显式 routing 可缓解部分顺序/长上下文问题。证据类型为受控实验与资源测量，但 RAG 图边由 semantic retriever 启发式构造。
+- 论文主实验使用 one-hop propagation、Llama-3.1-8B 家族和 post-trained `llama-3.1-8B-block-ft`，没有直接对 Graph-KV 继续 fine-tune；appendix 的 2-hop/3-hop 结果支持进一步传播的可行性，但不能替代 held-out topology-family 泛化。
+- 最重要不足：没有逐样本 node-relabeling/isomorphism equality、fixed-text key/irrelevant topology intervention、text shuffle、GNN-only/LLM-only/readout-only responsibility split 或 topology-family OOD；因此 Graph-KV 能证明 LLM-side structural routing 和上下文稳健性，不能单独证明 discrete graph token 的必要性或 LLM 的 causal topology use。证据类型：实验设计缺口、组件混杂和研究者归因边界。
+
+### 对研究地图与假设的更新
+
+- H1：维持“部分支持”。Graph-KV 让结构进入 LLM-side KV attention 并产生任务收益，但 mask、shared PE、retriever 和 post-trained backbone 共同承担效果，仍不能归因于 LLM 的独立 causal topology use。
+- H2：维持“部分支持”。chunk placement/distractor 稳健性是顺序路由正面证据，但不等价于 node relabeling 或 graph-isomorphism consistency。
+- H5：维持“部分支持”。Graph-KV 的 order/position robustness 与 permutation equality、fixed-text topology sensitivity 不是同一指标，支持继续拆分这些轴。
+- H6：维持“待验证”。显式结构 mask 比 latent soft intervention 更接近 routing-level intervention，但缺少 key/irrelevant direction accuracy 和责任分离。
+- H10：维持“待验证”。Arxiv-QA、RAG 和 star-neighbor stress test 不是 held-out topology-family OOD。
+- 研究地图新增 Graph-KV evidence-ledger 行和状态更新；I1 加入 Graph-KV-style mask-only、retriever randomization、mask shuffle 与 matched token/compute 对照。
+
+### Idea 与 Novelty Gate
+
+- 候选 Idea：I1“置换一致且可定位干预的离散图 Tokenizer”，模式为强化，状态保持“候选”，评分保持 8/10；不新增 I2。
+- 结合依据：今日 Graph-KV；历史 GraphTokenizer、Lost in Tokenization、Lost in Serialization、Detecting Differences Is Not Understanding Structure、CausalGraph2LLM；当前 H2/H3/H5/H6/H10 与 Q2/Q3/Q4/Q10/Q11。
+- 最近工作与最小差异：Graph-KV 已解决 LLM-side source→target KV mask、shared PE 和 chunk-order/long-context routing；GraphTokenizer 已解决 reversible/deterministic serialization+BPE；GQT 提供 GNN+RVQ hierarchical discrete token；TokenGT 提供 node/edge token 与 permutation-equivariant 理论；GraSAME/Graph Language Models 提供 graph-guided PLM/LM attention bias；Discovering Mechanisms 提供 permutation-augmented TokenGT-like Transformer 的 activation patching/circuit analysis。I1 的最小实质差异仍是把 discrete addressability、等价变换稳定性、fixed-text key/irrelevant intervention、GNN/LLM/readout responsibility split 和 topology-family OOD 作为一个联合可证伪协议，并在 matched token/compute budget 下加入 Graph-KV mask-only 对照。
+- Novelty Gate 结论：未发现上述联合协议的完全重复工作；Graph-KV 使 LLM-side structural routing 成为明确 prior art，因此 Novelty 只记 1/2，且不使用“首次”表述。若结果只显示 mask、multi-view 或 standard-split 增益，I1 应降级为评测复现。
+
+### 今日唯一推荐 Idea 与最小实验
+
+- 方法：以 GraphTokenizer reversible serialization/BPE 为离散接口，加入 Graph-KV-style mask-only、continuous projector、raw serialization、GNN-only、readout-only、LLM/Transformer-only 和 shuffled structural token 对照；在相同 backbone、hidden size、token/compute budget 下联合测等价变换与 topology intervention。
+- 核心预测：若离散可寻址接口确实提供独立结构证据，`10 relabelings × 4 edge orders × 3 starts/directions` 下 serialized/BPE token、hidden state 和输出应稳定；fixed-text key-edge 要求 direction accuracy 高，irrelevant-edge 要求 prediction equality 高；完整模型还应在 held-out topology family 超过 Graph-KV mask-only、GNN-only 和 readout-only。
+- 关键对照：retriever semantic-edge 与 random/irrelevant-edge、mask shuffle、shared-PE removal、one-hop/2-hop、fixed-text 与非固定文本、text shuffle，以及去掉 consistency loss/addressable token/intervention loss。
+- 支持条件：decode fidelity 100%；等价变换 prediction equality 高且 output KL/hidden distance 低；关键干预方向正确、无关干预稳定；完整模型在 topology-family OOD 有独立优势且不能被 mask-only/readout-only 复现。
+- 失败条件：Graph-KV mask-only 或 readout-only 复现全部增益；random/irrelevant edge 与 semantic retriever 表现相同；relabeling/edge order 触发 token 或输出翻转；关键 topology 无方向响应；或优势只存在于顺序摆放、长上下文和 standard split。
+- 资源与 7 天第一步：先运行 GraphTokenizer 官方 serialization/decode 小审计，不训练大模型；使用 100--1000 个小图，执行 `10 relabelings × 4 edge orders × 3 starts/directions`，覆盖 repeated labels 与 disconnected components，记录 serialized/BPE equality、decode isomorphism，再在小型 Transformer 上加入 Graph-KV mask-only matched comparator。完整 Graph-KV 复现需要 Llama-3.1-8B、FlashAttention-2 和长上下文多 GPU，暂不作为第一步。
+- 评分：Novelty 1/2、Importance 2/2、Falsifiability 2/2、Feasibility 1/2、Thesis Fit 2/2，总分 8/10。
+
+### 下一次研究问题
+
+- 先回答：GraphTokenizer 的 frequency-guided traversal 在 repeated labels、edge order、起点/方向和 disconnected components 下是否保持 sequence/BPE/decode equality；Graph-KV-style mask-only 是否在 matched budget 下复现 Graph-LLM 的顺序稳健和 topology intervention 结果？
+- 优先动作：运行 GraphTokenizer 官方代码小审计；随后只在 mask-only、retriever-randomized 与 discrete/BPE 对照均可复现的情况下进入 fixed-text topology intervention 和 responsibility split。
+
+### 参考来源
+
+- [arXiv 正式页面](https://arxiv.org/abs/2506.07334)、[HTML 全文](https://arxiv.org/html/2506.07334)、[NeurIPS 2025 poster](https://neurips.cc/virtual/2025/poster/118749)：论文元数据、方法、实验、附录与会议状态。
+- [Graph-KV 官方代码](https://github.com/Graph-COM/GraphKV)：公开实现、Arxiv-QA 数据与运行环境入口。
+- [GraphTokenizer](https://arxiv.org/abs/2603.11099)、[GQT](https://arxiv.org/abs/2410.13798)、[TokenGT](https://arxiv.org/abs/2207.02505)、[GraSAME](https://aclanthology.org/2024.findings-naacl.58/)、[Graph Language Models](https://aclanthology.org/2024.acl-long.245/) 和 [Discovering Mechanisms in Tokenized Graph Transformers](https://www.lgresearch.ai/publication/view?seq=172)：Novelty Gate 相邻工作。

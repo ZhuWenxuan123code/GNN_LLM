@@ -63,6 +63,8 @@
 | 2026-08-27 | doi:10.1186/s13321-025-01079-0 | 补充 H1/H2/H5/H9/H12 | 结构输入、结构可解码（间接）、结构可泛化（representation OOD）、shortcut control（部分） | AMORE 在 ChEBI-20 与 C9H12N2O isomers 上用 5 类 identity-preserving SMILES transformation 测 12 个 ChemLM；ChEBI-20 上 explicit-hydrogen 与 random atom-order retrieval 明显困难，Isomers 上 hydrogen Acc@1 几乎为 0；layer-wise hidden retrieval、Levenshtein/token length、ROUGE/METEOR 对照和 MoleculeNet augmented-test 共同显示表示格式会影响模型 | 研究对象是纯 sequence ChemLM，不是 GNN-LLM；没有 Graph-LLM connector、node relabeling 全集、fixed-text key/irrelevant edge intervention、text shuffle、GNN-only/LLM-only/readout-only 或 topology-family split；augmentation type 混入 token/长度/预训练分布差异，embedding retrieval 不等于 final causal use | 将 AMORE 的 `Acc@1/Acc@5/MRR + layer-wise + heavy-atom/ring stratification` 接入 EDT-Former/OOD-GraphLLM 的 `10 relabelings × 3+ valid SMILES × key/irrelevant topology intervention`，同时报告 patch NMI、token count、prediction equality、direction accuracy、no-RAG 与 GNN/LLM/readout responsibility split |
 | 2026-08-29 | arXiv:2606.09484 | 补充 H1/H2；部分支持 H5 | 结构被使用（间接）、shortcut control | 在 400 个非同构图对上三种 LLM 的 ordinary isomorphism accuracy 接近满分；但同一图随机重标记生成 400 个 isomorphic pairs 后，OpenAI 为 0-18%、Gemini 为 0-0.2%、Llama 为 2-39.2%，且 edge list/index/matrix 之间存在明显差异 | 研究对象是纯序列化 LLM，不是 GNN-LLM；没有 hidden-state probe、fixed-text topology intervention、text shuffle、GNN/LLM/readout split、held-out topology family，也未控制 girth、diameter、symmetry、automorphism 或 tokenization；permutation failure 是 shortcut/robustness 证据，不是 causal topology proof | 将 ordinary task accuracy 与 `10 relabelings × encoding/order variants × prediction equality/flip rate` 接入 GraphToken/IP-GLLM/HLM-G/EDT-Former/OOD-GraphLLM，并进一步加入 fixed-text key/irrelevant intervention、GNN-only/LLM-only/readout-only 和 topology-family OOD |
 | 2026-08-29 | arXiv:2603.11099 | 支持 H1/H2/H5；推进 H3 | 结构输入、结构可解码、结构可泛化（弱）、shortcut control（边界对照） | GraphTokenizer 用 `labeled graph -> frequency-guided reversible serialization -> BPE -> BERT/GTE`；Feuler/FCPP 同时追求 reversibility 与 determinism，BPE 在 ZINC 上约 10x 压缩序列；14 个 graph-level benchmark 上 GT+GTE 多数任务领先，COIL-DEL 为 89.6，textualized GraphGPT/LLAGA 仅 5.6/12.5 | 没有 empirical node-relabeling/isomorphism consistency、fixed-text topology intervention、text shuffle、hidden-state mediation 或 GNN/LLM/readout split；continuous features、node/edge-level addressability 和大图 context window 是限制；纯结构任务优势不能单独证明 Transformer/LLM causal topology use | 在同一 Transformer 上加入 `10 relabelings × 4 edge orders × 3 starts/directions`、decode isomorphism、key/irrelevant topology intervention 和 held-out topology-family；比较 reversible discrete token、raw serialization、continuous projector、GNN-only/readout-only 与 text-only |
+| 2026-08-30 | arXiv:2605.22471 | 支持 H1/H2/H5；强化 H3 | 结构输入、结构可解码、结构被使用（任务级间接）、结构可泛化（弱） | Lost in Tokenization 形式化 graph tokenization 为计算模型的一部分；证明 adjacency 对 closed-walk/connectivity 有有限深度瓶颈，random-walk 对 planarity 有不可辨识性，truncated spectral/adjacency 存在信息或带宽损失，且 real-world task 对 local/global/diffusion views 有不同偏好；combined view 在部分任务更强 | 论文只研究标准 Transformer Encoder、GIN、DeepSet，不是 Graph-LLM；理论边界依赖复杂度分离假设，实验是 standard split 且没有 node relabeling final-output equality、fixed-text topology intervention、text shuffle 或 GNN/LLM/readout responsibility split；combined gain 不能证明 LLM causal topology use | 将 I1 从单一 reversible sequence 审计扩展为 task-conditioned local/global/diffusion view 对照；在同一 Transformer 上联合测 `decode fidelity + permutation equality + key/irrelevant intervention + topology-family OOD`，并比较 single-view、combined、GNN-only/readout-only |
+| 2026-08-30 | arXiv:2506.07334 | 补充 H1/H2/H5；为 H6/I1 提供结构路由对照 | 结构被使用（间接）、结构可泛化（弱）、shortcut control（部分） | Graph-KV 在 LLM-side KV-cache 中对 source→target 节点施加图邻接 attention mask，并用 shared positional embedding 缓解 chunk-order bias；Top-3 在多跳 RAG、Cora/Pubmed topic classification 和大邻居 stress test 上优于顺序/块式基线，且对 chunk placement/distractor 有一定稳健性 | 没有 node permutation/isomorphism、fixed-text key/irrelevant topology intervention、text shuffle、GNN/LLM/readout responsibility split 或 topology-family OOD；RAG 边由 semantic retriever 启发式构造，主实验 one-hop，Graph-KV-FT backbone 与 no direct fine-tuning 混入；mask/共享 PE 的收益不能证明 discrete token 或 LLM causal topology use | 将 Graph-KV-style mask-only 作为 I1 的 matched baseline，与 reversible discrete/BPE、continuous projector、raw serialization 一起执行等价变换 equality、fixed-text topology intervention、责任拆分与 topology-family OOD |
 
 证据层次使用：`结构输入`、`结构可解码`、`结构被使用`、`结构可泛化`。
 
@@ -78,6 +80,7 @@
 8. Q8：在 OOD-GraphLLM 这类 molecular Graph-LLM 中，scaffold/size OOD 增益在移除 RAG、固定 node features/text 并比较 GNN-only/readout-only 后，是否仍由 LLM 贡献？
 9. Q9：基于 canonical/SMILES traversal 的 dynamic graph tokens 是否在合法等价序列化和 node relabeling 下保持相同结构证据，还是把序列预测难度误当成图不变量？
 10. Q10：GraphTokenizer 声称的 deterministic reversible serialization 在重复 node/edge labels、起点/方向、edge order 和 disconnected components 下是否真正产生等价 token sequence；BPE 是否会重新引入 serialization-order shortcut？
+11. Q11：在 GraphTokenizer 的 reversible discrete interface 中，task-conditioned complementary views 能否在有限深度和 token budget 下同时改善 local/global topology 任务，并保持等价序列化稳定与可定位的因果干预？
 
 ## 下一轮检索队列
 
@@ -141,3 +144,35 @@
 - H5：维持“部分支持”。该论文把 serialization invariance 作为接口属性，与当前研究要求的 final-output causal use 分开；其高分和结构词表可解释性仍不足以跨越从结构输入/可解码到因果使用的证据缺口。
 
 2026-08-29（GraphTokenizer）本轮优先级调整：先用官方代码复核 `Feuler/FCPP` 在重复 labels、起点/方向、edge order、disconnected components 和 `10 relabelings` 下的 serialized/BPE token equality，再把 `decode isomorphism + output KL + prediction equality` 接入 GraphToken/IP-GLLM/HLM-G。之后在相同 Transformer 上加入 fixed-text key/irrelevant topology intervention、text shuffle、GNN-only/readout-only 和 topology-family holdout；若离散 token 接口只改善 standard split 而不能保持等价输出或方向正确干预，则把 H3 降回构想。检索词：`GraphTokenizer Feuler permutation code audit`、`Graph Tokenization BPE isomorphism consistency`、`reversible graph serialization repeated labels`、`Graph-LLM discrete token causal intervention`。
+
+### 2026-08-30 状态更新说明
+
+- H1：维持“部分支持”。Lost in Tokenization 说明即使结构不经过自然语言和 GNN，tokenization 选择也会直接改变 Transformer 的有限深度计算能力；这强化“接口/系统收益不能直接归因于 LLM causal topology use”的边界，但不是 Graph-LLM 实证。
+- H2：维持“部分支持”。论文明确区分 permutation-equivariant 的 spectral/random-walk tokenization 与使用 dataset node order 的 adjacency tokenization，给出 order dependence 的接口级证据；仍没有在 GraphTokenizer 或 GTokenLLM 上做逐样本 relabeling equality。
+- H3：维持“待验证”并强化设计依据。本文的 local adjacency、global spectral、diffusion random-walk trade-off 和部分 combined-view 收益支持任务条件多视图结构瓶颈值得实验；但没有 addressable discrete token、fixed-text intervention 或 responsibility split，不能把 H3 升为已支持。
+- H5：维持“部分支持”。信息充分性、permutation equivariance、有限深度可计算性和最终 causal use 在本文中仍是不同层次；这与 GraphTokenizer 的 reversibility/determinism 和当前研究的 output-level causal test 一致。
+- H10：维持“待验证”。论文使用 GraphBench、OGB、ZINC 的 standard split，并未提供 held-out topology-family、generator/transitivity、cross-task 或 Graph-LLM 责任分离证据；多任务覆盖不能替代 topology OOD。
+
+2026-08-30 本轮优先级调整：I1 不再把“加入多视图”单独作为创新主张。先运行 GraphTokenizer 官方 serialization/decode 小规模审计，再在相同 Transformer 和 matched graph pairs 上比较 local edge-covering、global spectral/diffusion、single reversible sequence 与 combined view；所有 view 必须共同通过 `10 relabelings × 4 edge orders × 3 starts/directions`、decode isomorphism、fixed-text key/irrelevant intervention、readout-only/GNN-only 和 held-out topology-family。若 combined 仅提升 standard split 或 token budget，I1 保留为评测协议并降低方法 novelty。检索词：`task-conditioned graph tokenization local global views`、`GraphTokenizer permutation BPE equality`、`graph tokenization finite-depth tradeoff causal intervention`、`Graph-LLM addressable structural token`。
+
+### 2026-08-30 状态更新说明（Colorful Talks with Graphs）
+
+- H1：维持“部分支持”。Colorful Talks 的 ordered 1-WL 和自然颜色词能提高若干 graph-to-prompt 任务，但 WL refinement、全局消息排序和颜色映射均在 LLM 外部完成；任务收益不能直接归因为 LLM 的 causal topology use。
+- H2：维持“部分支持”。论文把 permutation-invariant 作为设计目标，却没有逐样本 node relabeling、edge-order、起点/方向或 isomorphism prediction equality；因此不能把形式主张写成已验证的不变量。
+- H3：维持“待验证”并强化 shortcut 控制。相同 WL partition 下 natural colors 明显优于 opaque Hue/name tokens，说明离散结构词表的 semantic anchor 必须与结构信息本身分离；这强化 I1 的 lexical-anchor control，但不等于可逆接口证据。
+- H5：维持“部分支持”。自然颜色词对最终任务有影响，说明 representation robustness、语义捷径和 topology causal use 是不同轴；论文没有 fixed-text key/irrelevant intervention 或组件责任分离。
+- H10：维持“待验证”。BA、ER、Path、长距离图、Cora 等覆盖了图类型和规模压力，但没有 held-out topology-family、generator/transitivity 或 cross-task OOD。
+
+证据账本补充：该论文提供“结构输入”和“结构被使用（任务级间接）”的正面证据，并提供 same-WL partition 的 lexical shortcut control；没有提供“结构反事实”“最终输出 permutation consistency”或“组件责任分离”的直接证据。最重要的新约束是：I1 的 comparison matrix 必须同时包含 ordered-WL natural colors、opaque same-partition tokens、reversible/BPE、Graph-KV mask-only 和 readout-only。
+
+2026-08-30（Colorful Talks with Graphs）本轮优先级调整：先完成 GraphTokenizer serialization/decode audit；随后在 matched token/compute budget 下加入 ordered-WL/color 与 opaque-token 对照，固定节点文本构造 key-edge/irrelevant-edge topology pairs，并联合执行 prediction equality、output KL、direction accuracy、GNN-only/readout-only 和 held-out topology-family。若 natural color 的收益在语义锚点消除或 text shuffle 后消失，I1 只保留为结构评测协议，不主张颜色词方法创新。
+
+### 2026-08-30 状态更新说明（Graph-KV）
+
+- H1：维持“部分支持”。Graph-KV 证明 LLM-side graph-conditioned routing 可以带来任务级收益和上下文/邻居扩展，但其 KV mask、shared PE、retriever 和 post-trained backbone 仍是混合结构，不能把收益归因于 LLM 的独立 causal topology use。
+- H2：维持“部分支持”。chunk placement/distractor 的顺序稳健性补充了结构路由的正面证据，但 chunk order 不是 node relabeling 或 graph-isomorphism equality，仍需在 Graph-KV-style mask 上运行逐样本等价审计。
+- H5：维持“部分支持”。Graph-KV 的顺序稳健性与 I1 的 permutation/equivalence 轴相关但不等价，进一步说明 robustness、routing 和 causal intervention 必须分别报告。
+- H6：维持“待验证”。显式 source→target mask 比 latent soft intervention 更接近结构路由干预，但论文没有 fixed-text key/irrelevant topology pair、方向正确率或模块责任分离。
+- H10：维持“待验证”。Arxiv-QA、RAG 和 star-neighbor stress test 是上下文、检索和规模压力测试，不是 held-out topology-family OOD。
+
+2026-08-30（Graph-KV）本轮优先级调整：将 Graph-KV-style mask/shared-PE 作为 mask-only baseline，先完成 GraphTokenizer 官方 serialization/decode audit，再在相同 token/compute budget 下比较 discrete/BPE、continuous projector、raw serialization 与 Graph-KV mask。共同执行 `10 relabelings × 4 edge orders × 3 starts/directions`、decode isomorphism、fixed-text key/irrelevant topology intervention、text shuffle、GNN-only/readout-only 和 held-out topology-family；同时加入 random/irrelevant edge 与 source-edge randomization，避免把 retriever 或位置稳健性误判为结构因果使用。检索词：`Graph-KV graph mask permutation invariance`、`LLM KV cache graph topology intervention`、`Graph-LLM mask-only discrete token comparison`、`fixed-text topology intervention responsibility split`。
